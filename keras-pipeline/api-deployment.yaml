@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keras-api
+  namespace: keras-pipeline
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: keras-api
+  template:
+    metadata:
+      labels:
+        app: keras-api
+    spec:
+      containers:
+        - name: api
+          image: python:3.11-slim
+          command:
+            - bash
+            - -c
+            - |
+              pip install -q fastapi uvicorn tensorflow keras redis
+              cat > /app/main.py << 'PYEOF'
+              from fastapi import FastAPI
+              from tensorflow import keras
+              import numpy as np
+              import json
+              import redis
+              import os
+
+              app = FastAPI(title="🧠 Keras Sentiment API")
+
+              # Redis connection
+              r = redis.Redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379'))
+
+              # Load model
+              model = keras.models.load_model('/models/keras/sentiment_model.h5')
+              with open('/models/keras/vocab.json') as f:
+                  vocab = json.load(f)
+
+              def encode(text):
+                  words = text.lower().split()[:10]
+                  encoded = [vocab.get(w, 0) for w in words]
+                  return encoded + [0] * (10 - len(encoded))
+
+              @app.get("/")
+              def root():
+                  return {
+                      "status": "🟢 Online",
+                      "model": "Keras Sentiment Analysis",
+                      "version": "1.0.0",
+                      "endpoints": ["/predict", "/health", "/queue"]
+                  }
+
+              @app.get("/health")
+              def health():
+                  return {"status": "healthy", "model_loaded": True}
+
+              @app.post("/predict")
+              def predict(text: str):
+                  x = np.array([encode(text)])
+                  pred = float(model.predict(x, verbose=0)[0][0])
+                  sentiment = "positivo 😊" if pred > 0.5 else "negativo 😞"
+                  confidence = round(pred, 4) if pred > 0.5 else round(1 - pred, 4)
+                  
+                  # Queue in Redis
+                  result = {
+                      "text": text,
+                      "sentiment": sentiment,
+                      "confidence": confidence,
+                      "timestamp": str(np.datetime64('now'))
+                  }
+                  r.lpush("predictions", json.dumps(result))
+                  r.ltrim("predictions", 0, 99)  # Keep last 100
+                  
+                  return result
+
+              @app.get("/queue")
+              def queue_status():
+                  predictions = [json.loads(x) for x in r.lrange("predictions", 0, 9)]
+                  return {
+                      "queue_size": r.llen("predictions"),
+                      "recent_predictions": predictions
+                  }
+              PYEOF
+              uvicorn main:app --host 0.0.0.0 --port 8000 --app-dir /app
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_URL
+              value: "redis://redis.redis-queue.svc.cluster.local:6379/0"
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: keras-model-pvc

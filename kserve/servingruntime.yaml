@@ -1,0 +1,30 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  name: huggingface-cpu-runtime
+  namespace: kserve
+spec:
+  supportedModelFormats:
+    - name: huggingface
+      version: "1"
+      autoSelect: true
+  containers:
+    - name: kserve-container
+      image: kserve/huggingfaceserver:v0.11.1
+      args:
+        - --model_name={{.Name}}
+        - --model_dir=/mnt/models
+      resources:
+        limits:
+          memory: "4Gi"
+          cpu: "2"
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+      volumeMounts:
+        - name: model-storage
+          mountPath: /mnt/models
+  volumes:
+    - name: model-storage
+      persistentVolumeClaim:
+        claimName: model-pvc

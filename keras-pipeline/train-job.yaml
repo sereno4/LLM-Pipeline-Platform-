@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keras-train
+  namespace: keras-pipeline
+spec:
+  template:
+    spec:
+      containers:
+        - name: trainer
+          image: tensorflow/tensorflow:latest
+          command:
+            - python
+            - -c
+            - |
+              import tensorflow as tf
+              from tensorflow import keras
+              import numpy as np
+              import json
+              import os
+
+              # Dataset de sentimentos
+              texts = ["I love this product", "This is terrible", "Amazing quality", "Very bad", "Great job", "Not good"]
+              labels = [1, 0, 1, 0, 1, 0]
+
+              # Vocab simples
+              vocab = set(" ".join(texts).lower().split())
+              word_index = {word: i+1 for i, word in enumerate(vocab)}
+
+              def encode(text):
+                  return [word_index.get(w, 0) for w in text.lower().split()[:10]]
+
+              X = keras.preprocessing.sequence.pad_sequences([encode(t) for t in texts], maxlen=10)
+              y = np.array(labels)
+
+              # Modelo
+              model = keras.Sequential([
+                  keras.layers.Embedding(len(vocab)+1, 16, input_length=10),
+                  keras.layers.GlobalAveragePooling1D(),
+                  keras.layers.Dense(8, activation='relu'),
+                  keras.layers.Dense(1, activation='sigmoid')
+              ])
+
+              model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+              model.fit(X, y, epochs=100, verbose=0)
+
+              # Salvar
+              os.makedirs('/models/keras', exist_ok=True)
+              model.save('/models/keras/sentiment_model.h5')
+              
+              with open('/models/keras/vocab.json', 'w') as f:
+                  json.dump(word_index, f)
+              
+              print("✅ Modelo treinado e salvo!")
+              print(f"Accuracy: {model.evaluate(X, y, verbose=0)[1]:.2f}")
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: keras-model-pvc
+      restartPolicy: Never

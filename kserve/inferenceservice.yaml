@@ -1,0 +1,12 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: gpt2-inference
+  namespace: kserve
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: huggingface
+      runtime: huggingface-cpu-runtime
+      storageUri: pvc://model-pvc/gpt2

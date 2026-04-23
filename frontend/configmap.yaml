@@ -1,0 +1,306 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: frontend
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>🚀 LLM Pipeline Platform</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          color: #eee;
+          min-height: 100vh;
+          padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 {
+          text-align: center;
+          color: #00d4ff;
+          font-size: 2.5em;
+          margin-bottom: 10px;
+          text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+        .subtitle {
+          text-align: center;
+          color: #8892b0;
+          margin-bottom: 40px;
+          font-size: 1.1em;
+        }
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 24px;
+          margin-bottom: 40px;
+        }
+        .card {
+          background: rgba(22, 33, 62, 0.8);
+          border-radius: 16px;
+          padding: 28px;
+          border: 1px solid rgba(0, 212, 255, 0.1);
+          transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 40px rgba(0, 212, 255, 0.2);
+        }
+        .card-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+        .icon {
+          font-size: 2em;
+          margin-right: 12px;
+        }
+        .card h3 {
+          color: #00d4ff;
+          font-size: 1.3em;
+        }
+        .status-bar {
+          display: flex;
+          align-items: center;
+          margin: 8px 0;
+          padding: 8px 12px;
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 8px;
+        }
+        .status-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          margin-right: 10px;
+          animation: pulse 2s infinite;
+        }
+        .online { background: #00ff88; }
+        .offline { background: #ff4444; }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .endpoint {
+          background: rgba(0, 212, 255, 0.1);
+          padding: 10px 14px;
+          border-radius: 8px;
+          font-family: 'Courier New', monospace;
+          font-size: 0.85em;
+          color: #00d4ff;
+          margin: 8px 0;
+          border-left: 3px solid #00d4ff;
+        }
+        input {
+          width: 100%;
+          padding: 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(0, 212, 255, 0.3);
+          background: rgba(0, 0, 0, 0.3);
+          color: #fff;
+          margin: 10px 0;
+          font-size: 1em;
+        }
+        input:focus {
+          outline: none;
+          border-color: #00d4ff;
+          box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+        button {
+          background: linear-gradient(135deg, #00d4ff, #00ff88);
+          color: #1a1a2e;
+          border: none;
+          padding: 12px 28px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 1em;
+          transition: transform 0.2s;
+          width: 100%;
+        }
+        button:hover {
+          transform: scale(1.05);
+        }
+        .result {
+          margin-top: 16px;
+          padding: 16px;
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 8px;
+          min-height: 60px;
+          font-family: 'Courier New', monospace;
+          font-size: 0.9em;
+          white-space: pre-wrap;
+          word-break: break-word;
+        }
+        .tech-stack {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 12px;
+        }
+        .tech-tag {
+          background: rgba(0, 212, 255, 0.15);
+          color: #00d4ff;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.8em;
+          border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        .footer {
+          text-align: center;
+          color: #8892b0;
+          margin-top: 40px;
+          padding: 20px;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>🚀 LLM Pipeline Platform</h1>
+        <p class="subtitle">Portfólio MLOps — KServe · Keras · Redis · Gateway API · ArgoCD</p>
+
+        <div class="grid">
+          <!-- KServe Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">🤖</span>
+              <h3>KServe GPT-2</h3>
+            </div>
+            <div class="status-bar">
+              <span class="status-dot online"></span>
+              <span>InferenceService rodando</span>
+            </div>
+            <div class="tech-stack">
+              <span class="tech-tag">HuggingFace</span>
+              <span class="tech-tag">CPU</span>
+              <span class="tech-tag">PVC</span>
+            </div>
+            <div class="endpoint">POST /v1/models/gpt2:predict</div>
+            <input type="text" id="gpt2-input" placeholder="Digite um texto..." value="The future of AI is">
+            <button onclick="callGPT2()">🎯 Gerar Texto</button>
+            <div class="result" id="gpt2-result">Aguardando requisição...</div>
+          </div>
+
+          <!-- Keras Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">🧠</span>
+              <h3>Keras Sentiment API</h3>
+            </div>
+            <div class="status-bar">
+              <span class="status-dot online"></span>
+              <span>Modelo treinado e servindo</span>
+            </div>
+            <div class="tech-stack">
+              <span class="tech-tag">TensorFlow</span>
+              <span class="tech-tag">FastAPI</span>
+              <span class="tech-tag">Redis</span>
+            </div>
+            <div class="endpoint">POST /keras/predict?text=...</div>
+            <input type="text" id="sentiment-input" placeholder="Texto em inglês..." value="This product is amazing!">
+            <button onclick="callSentiment()">😊 Analisar Sentimento</button>
+            <div class="result" id="sentiment-result">Aguardando requisição...</div>
+          </div>
+
+          <!-- Redis Queue Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📥</span>
+              <h3>Redis Queue</h3>
+            </div>
+            <div class="status-bar">
+              <span class="status-dot online"></span>
+              <span>Fila de processamento ativa</span>
+            </div>
+            <div class="tech-stack">
+              <span class="tech-tag">Celery</span>
+              <span class="tech-tag">Async</span>
+              <span class="tech-tag">Stream</span>
+            </div>
+            <div class="endpoint">GET /queue</div>
+            <button onclick="checkQueue()">📊 Ver Fila</button>
+            <div class="result" id="queue-result">Clique para ver a fila...</div>
+          </div>
+
+          <!-- Gateway Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">🌐</span>
+              <h3>Gateway API</h3>
+            </div>
+            <div class="status-bar">
+              <span class="status-dot online"></span>
+              <span>Roteamento ativo</span>
+            </div>
+            <div class="tech-stack">
+              <span class="tech-tag">NGINX</span>
+              <span class="tech-tag">HTTPRoute</span>
+              <span class="tech-tag">Load Balance</span>
+            </div>
+            <div class="endpoint">Routes: /v1/models/gpt2, /keras, /queue</div>
+            <div class="result">
+              <strong>Arquitetura:</strong><br>
+              Frontend → Gateway → KServe/Keras<br>
+              Keras → Redis Queue → Celery Worker
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>🔧 Projeto de Portfólio | MLOps | Kubernetes | GitOps</p>
+          <p style="margin-top:8px; font-size: 0.9em;">
+            Tecnologias: KServe · Keras · TensorFlow · Redis · Celery · Gateway API · ArgoCD · Kubernetes
+          </p>
+        </div>
+      </div>
+
+      <script>
+        async function callGPT2() {
+          const text = document.getElementById('gpt2-input').value;
+          const result = document.getElementById('gpt2-result');
+          result.textContent = '⏳ Processando...';
+          try {
+            const res = await fetch('/v1/models/gpt2:predict', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({instances: [{data: text}]})
+            });
+            const data = await res.json();
+            result.textContent = JSON.stringify(data, null, 2);
+          } catch(e) {
+            result.textContent = '❌ Erro: ' + e.message;
+          }
+        }
+
+        async function callSentiment() {
+          const text = document.getElementById('sentiment-input').value;
+          const result = document.getElementById('sentiment-result');
+          result.textContent = '⏳ Analisando...';
+          try {
+            const res = await fetch('/keras/predict?text=' + encodeURIComponent(text));
+            const data = await res.json();
+            result.innerHTML = `Sentimento: ${data.sentiment}\\nConfiança: ${data.confidence}\\nTexto: "${data.text}"`;
+          } catch(e) {
+            result.textContent = '❌ Erro: ' + e.message;
+          }
+        }
+
+        async function checkQueue() {
+          const result = document.getElementById('queue-result');
+          result.textContent = '⏳ Carregando...';
+          try {
+            const res = await fetch('/queue');
+            const data = await res.json();
+            result.innerHTML = `Tamanho: ${data.queue_size}\\n\\nÚltimas previsões:\\n${JSON.stringify(data.recent_predictions, null, 2)}`;
+          } catch(e) {
+            result.textContent = '❌ Erro: ' + e.message;
+          }
+        }
+      </script>
+    </body>
+    </html>

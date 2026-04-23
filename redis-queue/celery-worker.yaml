@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: redis-queue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+        - name: worker
+          image: python:3.11-slim
+          command:
+            - bash
+            - -c
+            - |
+              pip install -q celery redis
+              cat > /app/tasks.py << 'PYEOF'
+              from celery import Celery
+              import time
+              
+              app = Celery('tasks', broker='redis://redis.redis-queue.svc.cluster.local:6379/0')
+              
+              @app.task
+              def process_prediction(text, sentiment, score):
+                  time.sleep(2)  # Simula processamento
+                  return {"processed": True, "text": text, "sentiment": sentiment, "score": score}
+              PYEOF
+              celery -A tasks worker --loglevel=info
+          env:
+            - name: REDIS_URL
+              value: "redis://redis.redis-queue.svc.cluster.local:6379/0"
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
