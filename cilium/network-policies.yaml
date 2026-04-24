@@ -1,0 +1,108 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: kserve-ingress
+  namespace: kserve
+spec:
+  endpointSelector:
+    matchLabels:
+      app: kserve-controller-manager
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: gateway
+            namespace: gateway
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: keras-api-policy
+  namespace: keras-pipeline
+spec:
+  endpointSelector:
+    matchLabels:
+      app: keras-api
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: gateway
+            namespace: gateway
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: redis
+            namespace: redis-queue
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: redis-policy
+  namespace: redis-queue
+spec:
+  endpointSelector:
+    matchLabels:
+      app: redis
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: celery-worker
+            namespace: redis-queue
+        - matchLabels:
+            app: keras-api
+            namespace: keras-pipeline
+        - matchLabels:
+            app: keras-api-v2
+            namespace: keras-pipeline
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: frontend-policy
+  namespace: frontend
+spec:
+  endpointSelector:
+    matchLabels:
+      app: frontend
+  ingress:
+    - fromEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: gateway
+            namespace: gateway
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP

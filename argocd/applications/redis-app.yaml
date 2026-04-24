@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: 🔴 redis-app
+  name: redis-app
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://github.com/SEU_USUARIO/llm-portfolio.git
+    repoURL: git@github.com:sereno4/LLM-Pipeline-Platform-.git
     targetRevision: main
     path: redis-queue
   destination:

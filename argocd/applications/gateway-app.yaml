@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: 🌐 gateway-app
+  name: gateway-app
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://github.com/SEU_USUARIO/llm-portfolio.git
+    repoURL: git@github.com:sereno4/LLM-Pipeline-Platform-.git
     targetRevision: main
     path: gateway
   destination:

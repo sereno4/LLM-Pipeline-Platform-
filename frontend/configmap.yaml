@@ -20,7 +20,7 @@ data:
           min-height: 100vh;
           padding: 20px;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1400px; margin: 0 auto; }
         h1 {
           text-align: center;
           color: #00d4ff;
@@ -81,6 +81,7 @@ data:
         }
         .online { background: #00ff88; }
         .offline { background: #ff4444; }
+        .warning { background: #ffaa00; }
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
@@ -136,6 +137,16 @@ data:
           white-space: pre-wrap;
           word-break: break-word;
         }
+        .metric {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .metric-value {
+          color: #00ff88;
+          font-weight: bold;
+        }
         .tech-stack {
           display: flex;
           flex-wrap: wrap;
@@ -157,12 +168,30 @@ data:
           padding: 20px;
           border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
+        .canary-badge {
+          display: inline-block;
+          background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 0.7em;
+          margin-left: 8px;
+        }
+        .keda-badge {
+          display: inline-block;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 0.7em;
+          margin-left: 8px;
+        }
       </style>
     </head>
     <body>
       <div class="container">
         <h1>🚀 LLM Pipeline Platform</h1>
-        <p class="subtitle">Portfólio MLOps — KServe · Keras · Redis · Gateway API · ArgoCD</p>
+        <p class="subtitle">Portfólio MLOps — KServe · Keras · Redis · KEDA · Cilium · Gateway API · ArgoCD</p>
 
         <div class="grid">
           <!-- KServe Card -->
@@ -186,15 +215,15 @@ data:
             <div class="result" id="gpt2-result">Aguardando requisição...</div>
           </div>
 
-          <!-- Keras Card -->
+          <!-- Keras v1 Card -->
           <div class="card">
             <div class="card-header">
               <span class="icon">🧠</span>
-              <h3>Keras Sentiment API</h3>
+              <h3>Keras Sentiment API v1</h3>
             </div>
             <div class="status-bar">
               <span class="status-dot online"></span>
-              <span>Modelo treinado e servindo</span>
+              <span>Modelo treinado e servindo (90% tráfego)</span>
             </div>
             <div class="tech-stack">
               <span class="tech-tag">TensorFlow</span>
@@ -205,6 +234,61 @@ data:
             <input type="text" id="sentiment-input" placeholder="Texto em inglês..." value="This product is amazing!">
             <button onclick="callSentiment()">😊 Analisar Sentimento</button>
             <div class="result" id="sentiment-result">Aguardando requisição...</div>
+          </div>
+
+          <!-- Keras v2 Canary Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">🧪</span>
+              <h3>Keras Sentiment API v2 <span class="canary-badge">CANARY 10%</span></h3>
+            </div>
+            <div class="status-bar">
+              <span class="status-dot warning"></span>
+              <span>Canary com threshold de confiança</span>
+            </div>
+            <div class="tech-stack">
+              <span class="tech-tag">TensorFlow</span>
+              <span class="tech-tag">FastAPI</span>
+              <span class="tech-tag">Threshold v2</span>
+            </div>
+            <div class="endpoint">POST /keras/predict?text=... (10% chance)</div>
+            <div class="result">
+              <strong>Features v2:</strong><br>
+              • Threshold de confiança (neutro se < 0.6)<br>
+              • Métricas de versão no response<br>
+              • Split 90/10 via Gateway API
+            </div>
+          </div>
+
+          <!-- KEDA Auto-scaling Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📈</span>
+              <h3>KEDA Auto-scaling <span class="keda-badge">KEDA</span></h3>
+            </div>
+            <div class="status-bar">
+              <span class="status-dot online"></span>
+              <span>Escalando baseado em fila Redis</span>
+            </div>
+            <div class="metric">
+              <span>Min Replicas:</span>
+              <span class="metric-value">1</span>
+            </div>
+            <div class="metric">
+              <span>Max Replicas:</span>
+              <span class="metric-value">10</span>
+            </div>
+            <div class="metric">
+              <span>Trigger:</span>
+              <span class="metric-value">Redis list length > 5</span>
+            </div>
+            <div class="metric">
+              <span>Polling Interval:</span>
+              <span class="metric-value">5s</span>
+            </div>
+            <div class="endpoint">ScaledObject: keras-api-scaler</div>
+            <button onclick="checkKEDA()">📊 Ver Métricas KEDA</button>
+            <div class="result" id="keda-result">Clique para ver métricas...</div>
           </div>
 
           <!-- Redis Queue Card -->
@@ -227,6 +311,33 @@ data:
             <div class="result" id="queue-result">Clique para ver a fila...</div>
           </div>
 
+          <!-- Cilium Hubble Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">🔒</span>
+              <h3>Cilium Hubble <span class="tech-tag">eBPF</span></h3>
+            </div>
+            <div class="status-bar">
+              <span class="status-dot online"></span>
+              <span>Observabilidade de rede ativa</span>
+            </div>
+            <div class="metric">
+              <span>Flows/s:</span>
+              <span class="metric-value" id="hubble-flows">Carregando...</span>
+            </div>
+            <div class="metric">
+              <span>Connected Nodes:</span>
+              <span class="metric-value" id="hubble-nodes">Carregando...</span>
+            </div>
+            <div class="metric">
+              <span>Network Policies:</span>
+              <span class="metric-value">3 ativas</span>
+            </div>
+            <div class="endpoint">hubble observe --follow</div>
+            <button onclick="refreshHubble()">🔄 Atualizar Métricas</button>
+            <div class="result" id="hubble-result">Clique para atualizar...</div>
+          </div>
+
           <!-- Gateway Card -->
           <div class="card">
             <div class="card-header">
@@ -235,26 +346,25 @@ data:
             </div>
             <div class="status-bar">
               <span class="status-dot online"></span>
-              <span>Roteamento ativo</span>
+              <span>Roteamento ativo com Canary</span>
             </div>
             <div class="tech-stack">
               <span class="tech-tag">NGINX</span>
               <span class="tech-tag">HTTPRoute</span>
               <span class="tech-tag">Load Balance</span>
             </div>
-            <div class="endpoint">Routes: /v1/models/gpt2, /keras, /queue</div>
-            <div class="result">
-              <strong>Arquitetura:</strong><br>
-              Frontend → Gateway → KServe/Keras<br>
-              Keras → Redis Queue → Celery Worker
-            </div>
+            <div class="endpoint">Routes:</div>
+            <div class="endpoint">/ → Frontend</div>
+            <div class="endpoint">/v1/models/gpt2 → KServe</div>
+            <div class="endpoint">/keras → Keras (90% v1 / 10% v2)</div>
+            <div class="endpoint">/queue → Keras API</div>
           </div>
         </div>
 
         <div class="footer">
           <p>🔧 Projeto de Portfólio | MLOps | Kubernetes | GitOps</p>
           <p style="margin-top:8px; font-size: 0.9em;">
-            Tecnologias: KServe · Keras · TensorFlow · Redis · Celery · Gateway API · ArgoCD · Kubernetes
+            Tecnologias: KServe · Keras · TensorFlow · Redis · Celery · KEDA · Cilium · Gateway API · ArgoCD · Kubernetes
           </p>
         </div>
       </div>
@@ -284,7 +394,7 @@ data:
           try {
             const res = await fetch('/keras/predict?text=' + encodeURIComponent(text));
             const data = await res.json();
-            result.innerHTML = `Sentimento: ${data.sentiment}\\nConfiança: ${data.confidence}\\nTexto: "${data.text}"`;
+            result.innerHTML = `Sentimento: ${data.sentiment}\nConfiança: ${data.confidence}\nVersão: ${data.version || 'v1'}\nTexto: "${data.text}"`;
           } catch(e) {
             result.textContent = '❌ Erro: ' + e.message;
           }
@@ -296,11 +406,37 @@ data:
           try {
             const res = await fetch('/queue');
             const data = await res.json();
-            result.innerHTML = `Tamanho: ${data.queue_size}\\n\\nÚltimas previsões:\\n${JSON.stringify(data.recent_predictions, null, 2)}`;
+            result.innerHTML = `Tamanho: ${data.queue_size}\n\nÚltimas previsões:\n${JSON.stringify(data.recent_predictions, null, 2)}`;
           } catch(e) {
             result.textContent = '❌ Erro: ' + e.message;
           }
         }
+
+        async function checkKEDA() {
+          const result = document.getElementById('keda-result');
+          result.textContent = '⏳ Carregando métricas KEDA...';
+          // Simulação - em produção viria da API do Kubernetes
+          result.innerHTML = `Métricas KEDA (simulado):\n\n• Replicas atuais: 1\n• Queue length: 0\n• CPU usage: 12%\n• Memory usage: 456MB\n\nTrigger: predictions list < 5 (não escalando)`;
+        }
+
+        async function refreshHubble() {
+          const result = document.getElementById('hubble-result');
+          const flows = document.getElementById('hubble-flows');
+          const nodes = document.getElementById('hubble-nodes');
+          
+          result.textContent = '⏳ Atualizando...';
+          
+          // Simulação - em produção viria do Hubble API
+          setTimeout(() => {
+            flows.textContent = '3.85/s';
+            nodes.textContent = '1/1';
+            result.innerHTML = `Últimos flows:\n• hubble-ui → coredns:53 (UDP)\n• host → coredns:8080 (TCP)\n• keras-api → redis:6379 (TCP)\n\nNetwork Policies ativas:\n• kserve-ingress (ALLOW gateway → kserve)\n• keras-api-policy (ALLOW gateway → keras, keras → redis)\n• redis-policy (ALLOW keras/celery → redis)`;
+          }, 500);
+        }
+
+        // Auto-refresh Hubble a cada 30s
+        setInterval(refreshHubble, 30000);
+        refreshHubble();
       </script>
     </body>
     </html>

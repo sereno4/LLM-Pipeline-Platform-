@@ -1,19 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: keras-pipeline-app
+  name: cilium-app
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: git@github.com:sereno4/LLM-Pipeline-Platform-.git
+    repoURL: https://github.com/SEU_USUARIO/llm-portfolio.git
     targetRevision: main
-    path: keras-pipeline
+    path: cilium
   destination:
     server: https://kubernetes.default.svc
-    namespace: keras-pipeline
+    namespace: cilium-monitoring
   syncPolicy:
     automated:
       prune: true

@@ -1,0 +1,42 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: keras-api-scaler
+  namespace: keras-pipeline
+spec:
+  scaleTargetRef:
+    name: keras-api
+    kind: Deployment
+    apiVersion: apps/v1
+  pollingInterval: 5
+  cooldownPeriod: 30
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: redis
+      metadata:
+        address: redis.redis-queue.svc.cluster.local:6379
+        listName: predictions
+        listLength: "5"
+      authenticationRef:
+        name: keda-redis-auth
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-redis-auth
+  namespace: keras-pipeline
+spec:
+  secretTargetRef:
+    - parameter: address
+      name: keda-redis-secret
+      key: redis-address
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keda-redis-secret
+  namespace: keras-pipeline
+type: Opaque
+stringData:
+  redis-address: redis.redis-queue.svc.cluster.local:6379

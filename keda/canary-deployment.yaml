@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keras-api-v2
+  namespace: keras-pipeline
+  labels:
+    app: keras-api
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keras-api
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: keras-api
+        version: v2
+    spec:
+      containers:
+        - name: api
+          image: python:3.11-slim
+          command:
+            - bash
+            - -c
+            - |
+              pip install -q fastapi uvicorn tensorflow keras redis
+              cat > /app/main.py << 'PYEOF'
+              from fastapi import FastAPI
+              from tensorflow import keras
+              import numpy as np
+              import json
+              import redis
+              import os
+
+              app = FastAPI(title="Keras Sentiment API v2 CANARY")
+
+              r = redis.Redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379'))
+              model = keras.models.load_model('/models/keras/sentiment_model.h5')
+              with open('/models/keras/vocab.json') as f:
+                  vocab = json.load(f)
+
+              def encode(text):
+                  words = text.lower().split()[:10]
+                  encoded = [vocab.get(w, 0) for w in words]
+                  return encoded + [0] * (10 - len(encoded))
+
+              @app.get("/")
+              def root():
+                  return {
+                      "status": "CANARY v2",
+                      "model": "Keras Sentiment v2",
+                      "features": ["confidence_threshold", "batch_processing"],
+                      "canary": True,
+                      "weight": "10%"
+                  }
+
+              @app.post("/predict")
+              def predict(text: str):
+                  x = np.array([encode(text)])
+                  pred = float(model.predict(x, verbose=0)[0][0])
+                  sentiment = "positivo 😊" if pred > 0.5 else "negativo 😞"
+                  confidence = round(pred, 4) if pred > 0.5 else round(1 - pred, 4)
+                  
+                  # Feature v2: threshold de confiança
+                  if confidence < 0.6:
+                      sentiment = "neutro 🤔 (baixa confiança)"
+                  
+                  result = {
+                      "text": text,
+                      "sentiment": sentiment,
+                      "confidence": confidence,
+                      "version": "v2-canary",
+                      "threshold_applied": confidence < 0.6,
+                      "timestamp": str(np.datetime64('now'))
+                  }
+                  r.lpush("predictions", json.dumps(result))
+                  r.ltrim("predictions", 0, 99)
+                  return result
+
+              @app.get("/health")
+              def health():
+                  return {
+                      "status": "healthy",
+                      "version": "v2-canary",
+                      "canary": True
+                  }
+              PYEOF
+              uvicorn main:app --host 0.0.0.0 --port 8000 --app-dir /app
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_URL
+              value: "redis://redis.redis-queue.svc.cluster.local:6379/0"
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: keras-model-pvc
