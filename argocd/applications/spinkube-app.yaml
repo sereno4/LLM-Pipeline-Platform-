@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: spinkube-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  project: default
+  source:
+    repoURL: https://github.com/SEU_USUARIO/llm-portfolio.git
+    targetRevision: main
+    path: spinkube
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: SpinKube
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

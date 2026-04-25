@@ -1,0 +1,199 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: holmegpt-config
+  namespace: holmegpt
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>HolmeGPT — Chat Local</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          color: #eee;
+          min-height: 100vh;
+          padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 {
+          text-align: center;
+          color: #00d4ff;
+          font-size: 2.5em;
+          margin-bottom: 10px;
+        }
+        .subtitle {
+          text-align: center;
+          color: #8892b0;
+          margin-bottom: 30px;
+          font-size: 1.1em;
+        }
+        .chat-container {
+          background: rgba(22, 33, 62, 0.8);
+          border-radius: 16px;
+          padding: 24px;
+          border: 1px solid rgba(0, 212, 255, 0.1);
+          height: 60vh;
+          overflow-y: auto;
+          margin-bottom: 20px;
+        }
+        .message {
+          margin-bottom: 16px;
+          padding: 12px 16px;
+          border-radius: 12px;
+          max-width: 80%;
+        }
+        .message.user {
+          background: rgba(0, 212, 255, 0.15);
+          margin-left: auto;
+          border-bottom-right-radius: 2px;
+        }
+        .message.assistant {
+          background: rgba(255, 255, 255, 0.1);
+          margin-right: auto;
+          border-bottom-left-radius: 2px;
+        }
+        .message .sender {
+          font-size: 0.8em;
+          color: #00d4ff;
+          margin-bottom: 4px;
+        }
+        .input-area {
+          display: flex;
+          gap: 12px;
+          padding: 16px;
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 12px;
+        }
+        input {
+          flex: 1;
+          padding: 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(0, 212, 255, 0.3);
+          background: rgba(0, 0, 0, 0.3);
+          color: #fff;
+          font-size: 1em;
+        }
+        input:focus {
+          outline: none;
+          border-color: #00d4ff;
+          box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+        button {
+          background: linear-gradient(135deg, #00d4ff, #00ff88);
+          color: #1a1a2e;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 1em;
+        }
+        button:hover {
+          transform: scale(1.05);
+        }
+        .status {
+          text-align: center;
+          padding: 12px;
+          background: rgba(0, 212, 255, 0.1);
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .model-info {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px;
+          background: rgba(0, 212, 255, 0.05);
+          border-radius: 8px;
+          font-size: 0.9em;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>🤖 HolmeGPT</h1>
+        <p class="subtitle">Chat com Modelos WASM Local — Sem GPU necessária</p>
+        
+        <div class="status" id="status">
+          <span>🟢 Conectado</span> | Modelo: <span id="model-name">WASM Runtime</span> | 
+          Backend: <span id="backend-status">Local</span>
+        </div>
+
+        <div class="model-info">
+          <span>⚡ Runtime: WASM + WebAssembly</span>
+          <span>💾 Memória: ~512MB</span>
+          <span>🧠 Arquitetura: CPU-optimized</span>
+        </span>
+        <span>🌐 API: Local WebSocket</span>
+        </span>
+        <span>📊 Status: <span id="status-text">Pronto</span></span>
+        </div>
+        <span>💬 Mensagens: <span id="msg-count">0</span></span>
+        </div>
+
+        <div class="chat-container" id="chat">
+          <div class="message assistant">
+            <div class="sender">🤖 Assistente</div>
+            Olá! Sou o HolmeGPT. Como posso ajudar?
+          </div>
+        </div>
+
+        <div class="input-area">
+          <input type="text" id="user-input" placeholder="Digite sua mensagem..." autofocus>
+          <button onclick="sendMessage()">Enviar</button>
+        </div>
+      </div>
+
+      <script>
+        let messageCount = 0;
+        
+        function sendMessage() {
+          const input = document.getElementById('user-input');
+          const chat = document.getElementById('chat');
+          const text = input.value.trim();
+          
+          if (!text) return;
+          
+          // Adicionar mensagem do usuário
+          messageCount++;
+          document.getElementById('msg-count').textContent = messageCount;
+          
+          const userMsg = document.createElement('div');
+          userMsg.className = 'message user';
+          userMsg.innerHTML = `<div class="sender">👤 Você</div>${text}`;
+          chat.appendChild(userMsg);
+          
+          // Simular resposta (em produção viria do WASM runtime)
+          setTimeout(() => {
+            const assistantMsg = document.createElement('div');
+            assistantMsg.className = 'message assistant';
+            
+            // Simulação de resposta
+            const responses = [
+              "Interessante! Pode me contar mais sobre isso.",
+              "Estou processando sua solicitação...",
+              "Isso é fascinante! Vamos explorar juntos.",
+              "Como um assistente IA, estou aprendendo com você.",
+              "Posso ajudar com mais alguma coisa?"
+            ];
+            
+            assistantMsg.innerHTML = `<div class="sender">🤖 Assistente</div>${responses[Math.floor(Math.random() * responses.length)]}`;
+            chat.appendChild(assistantMsg);
+            chat.scrollTop = chat.scrollHeight;
+          }, 800);
+          
+          input.value = '';
+        }
+
+        // Enviar com Enter
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') sendMessage();
+        });
+      </script>
+    </body>
+    </html>

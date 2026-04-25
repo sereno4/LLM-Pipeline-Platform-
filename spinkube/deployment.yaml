@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Spin-operator
+  namespace: SpinKube
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Spin-operator
+  template:
+    metadata:
+      labels:
+        app: Spin-operator
+    spec:
+      containers:
+        - name: operator
+          image: ghcr.io/spinkube/spin-operator:latest
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"

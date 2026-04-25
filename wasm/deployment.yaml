@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasm-runtime
+  namespace: wasm-runtime
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wasm-runtime
+  template:
+    metadata:
+      labels:
+        app: wasm-runtime
+    spec:
+      containers:
+        - name: runtime
+          image: wasmedge/wasmedge:latest
+          command:
+            - /usr/local/bin/wasmedge
+            - --dir
+            - /:/host
+            - --nn-preload
+            - default:/models/model.wasm
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: models
+              mountPath: /models
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: wasm-model-pvc
